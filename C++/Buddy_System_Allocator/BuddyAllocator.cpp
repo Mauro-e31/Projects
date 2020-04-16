@@ -88,7 +88,7 @@ int BuddyAllocator::free(char* _a) {
 	int free_block_size = block_to_be_free->block_size;
 	int location = (_a-memory) ;
 	//cout<< "location of a "<< location <<endl;
-	//cout<< "cleaning up... "<<endl;
+	//cout<< "cleaning up.... "<<endl;
 	//print_free_list();
 
 	//cout<<"adding block of size = "<<free_block_size<< " to the free list\n";
