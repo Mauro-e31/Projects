@@ -77,17 +77,21 @@ char* BuddyAllocator::alloc(int _length) {
  for(int j =memory_needed*2; j<=_total_memory_length;j=j*2 ){
 	 //cout<<"trying to find memory with value = "<<j<<"\n";
 
-	 if(is_block_available(j)){
-		 char *temp_mem_address= get_BH_and_pop_from_FL(j);
-		 BlockHeader* temp_ptr2= (BlockHeader*)temp_mem_address;
-		 BlockHeader* splited_block = split( temp_ptr2);
-		 get_LL_address_of_bsize(j/2)->insert_buddies(splited_block);
+	 if(is_block_available(j)){ 
+		 char *temp_mem_address= get_BH_and_pop_from_FL(j); //get the address of the Block header and remove from Free list
+		 BlockHeader* temp_ptr2= (BlockHeader*)temp_mem_address; // use a block header pointer to point to the block 
+		 BlockHeader* splited_block = split( temp_ptr2); // pass the block address and return the address of the Left most buddy 
+		 get_LL_address_of_bsize(j/2)->insert_buddies(splited_block); // go to our Free list and look for a block with the new
+		 // block size. and insert both buddies in the free list. 
+
 
 		 if(is_block_available(memory_needed)){
-			 return ( get_BH_and_pop_from_FL(memory_needed)+16);
+			 return ( get_BH_and_pop_from_FL(memory_needed)+16); //if by spliting a bigger block we find our 
+			 //desired block length return that block address plus the offset of the header info
 		 }
 		 else{
-			 j= memory_needed;
+			 j= memory_needed; //if the block we split up still too big for the desired block, 
+			 //we search again to see if the block we just split could get us closer to our goal 
 		 }
 	 }
 
@@ -98,16 +102,16 @@ char* BuddyAllocator::alloc(int _length) {
 }
 
 int BuddyAllocator::free(char* _a) {
-	//cout<<"////////////////////////CALLING-FREE///////////////////////////////\n\n";
-	BlockHeader * block_to_be_free = (BlockHeader*) (_a-16);
-	block_to_be_free->is_used = false;
+	//////////////////////////CALLING-FREE///////////////////////////////
+	BlockHeader * block_to_be_free = (BlockHeader*) (_a-16); //delete offset to return to beginning of block, and header info
+	block_to_be_free->is_used = false; 
 	int free_block_size = block_to_be_free->block_size;
 	int location = (_a-memory) ;
-	//cout<< "location of a "<< location <<endl;
-	//cout<< "cleaning up.... "<<endl;
+
 	//print_free_list();
 
-	//cout<<"adding block of size = "<<free_block_size<< " to the free list\n";
+	//once free we need to see if his buddy is also empty
+
 	//cout<<"is his buddy free? .. \n";
 	//print_free_list();
 	BlockHeader * possible_buddy = getbuddy(block_to_be_free);
@@ -189,6 +193,7 @@ char * BuddyAllocator::get_BH_and_pop_from_FL(int _length){
 			return ((char*)temp_header);
 		}
 	}
+	return NULL; 
 }
 
 BlockHeader* BuddyAllocator::getbuddy(BlockHeader * addr){
