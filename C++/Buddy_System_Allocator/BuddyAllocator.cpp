@@ -6,31 +6,42 @@
 using namespace std;
 
 BuddyAllocator::BuddyAllocator (int _basic_block_size, int _total_memory_length){
-	this->memory= new char[_total_memory_length];
-	this->_total_memory_length= _total_memory_length;
-  	this->_basic_block_size= _basic_block_size;
+	this->memory = new char[_total_memory_length];
+	//NOTE: we use a char since its memory size is 1 byte
+
+	this->_total_memory_length = _total_memory_length;
+	this->_basic_block_size = _basic_block_size;
+
+	/*we have allocated a chunk of memory from the heap*
+	 *This will be the memory we will use for the remaining of the program*/
+
+	///---Chaning our memory into our block header to easily manipulated--//////
+	BlockHeader *new_header = (BlockHeader *)memory;
+
+	//Now we can begin by making our first memory block available
+	new_header->is_used = false;
+	new_header->block_size = _total_memory_length;
+	new_header->next_header = NULL;
 
 
-  BlockHeader* new_header = (BlockHeader * ) memory;
-  ////cout<<"Available memory = "<< _total_memory_length - sizeof(BlockHeader)<<"\n";
-  new_header->is_used= false;
-  new_header->block_size = _total_memory_length;
-  new_header->next_header= NULL;
+	/*Note: the BuddyAllocator class has a private member variable called "free_list"*
+	 *This is a vector of LinkedList pointers, this pointers will point to a list of 
+	 *blocks that are available for the user to use. 
+	 *Since the memory and blocks can be different depending on the users input, a *
+	 *for loop is used to adapt for this changes */
+	 
+	for (int i = _basic_block_size; i <= _total_memory_length; i = i * 2)
+	{	
+		/*create a list with the basic_block size then multiply by two*/
+		LinkedList *temp_ptr = new LinkedList();
+		temp_ptr->set_block_size(i);
+		free_list.push_back(temp_ptr);
+	}
 
-  char * test_user_buffer= memory+16;
-  char * test2 = ((char*)new_header)+16;
-  ////cout<<"user_buffer1 -> "<<static_cast<void*>(test_user_buffer)<<endl;
-  ////cout<<"user_buffer2 -> "<<static_cast<void*>(test2)<<endl;
-  /*create a free list value*/
-  for(int i =_basic_block_size; i<=_total_memory_length; i=i*2 ){
-	  LinkedList* temp_ptr= new LinkedList();
-	  temp_ptr->set_block_size(i);
-	  free_list.push_back(temp_ptr);
-  }
+	free_list.back()->insert(new_header);
+	//We add our first block to the free list
 
-  free_list.back()->insert(new_header);
-  //print_free_list();
-
+	//print_free_list(); //used to debug and print list of available blocks
 }
 
 BuddyAllocator::~BuddyAllocator (){
@@ -41,23 +52,28 @@ delete [] memory;
 }
 
 char* BuddyAllocator::alloc(int _length) {
-  /* This preliminary implementation simply hands the call over the
-     the C standard library!
-     Of course this needs to be replaced by your implementation.
-  */
-  //cout<<"before allocating \n";
-  //print_free_list();
+
  int memory_needed = NearestPow2(_length + sizeof(BlockHeader));
- //cout<<"\nmemory_needed by user = "<<memory_needed<<endl;
  if(memory_needed<_basic_block_size){
 	 memory_needed= _basic_block_size;
  }
+
+ /* memory needed is equal to the users need plus the extra we use in our block header 
+  * We round this to the nearest power of 2 or to the basic block size */
 
  if(is_block_available(memory_needed)){
 	 return ( get_BH_and_pop_from_FL(memory_needed)+16);
  }
 
+ /*if the desired block is found in the free list, then we get the address of that *
+  *block, remove it from the free list and return the address. The "+16" is use to move *
+  *our pointer to the available memory for the user, this prevents the user from *
+  *overriding the blocks information such as block size etc. */
 
+
+ /*if no memory block is availble with the a certain length, then we need to start looking*
+  *for bigger blocks to split */
+ 
  for(int j =memory_needed*2; j<=_total_memory_length;j=j*2 ){
 	 //cout<<"trying to find memory with value = "<<j<<"\n";
 
@@ -140,6 +156,8 @@ void BuddyAllocator::print_free_list(){
 }
 
 bool BuddyAllocator::is_block_available(int _length){
+	//check the freelist for a block of size _lenth
+
 	for(int i =0; i<free_list.size(); i++){
 		if( (free_list[i]-> get_head() != NULL) && (free_list[i]->get_block_size()== _length)){
 			//cout<< "BLOCK of size =  "<<_length<< ", Available\n" ;

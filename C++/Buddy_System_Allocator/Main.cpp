@@ -6,6 +6,8 @@
 #include <string>
 
 int main(int argc, char ** argv) {
+
+    /* We start the program by parsing all arguments passed */
     string  input_value;
     int basic_block_size = 128, memory_length = 128*1024*1024;
     for( int i =1; i<argc; i ++){
@@ -23,8 +25,14 @@ int main(int argc, char ** argv) {
         }
     }
 
+    /*once we have our basic block size and memory lenght we can pass it into our
+     *own memory allocator and begin testing */ 
+
+
   // test memory manager
   BuddyAllocator * allocator = new BuddyAllocator(basic_block_size, memory_length);
+  
+  /*running test on ackerman code */
   Ackerman* am = new Ackerman ();
   am->test(allocator); // this is the full-fledged test.
 
