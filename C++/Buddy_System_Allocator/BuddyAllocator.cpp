@@ -1,5 +1,7 @@
 /*
     File: my_allocator.cpp
+	Author: Mauro Lopez 
+	//Code is based on buddyAllocator.h
 */
 #include "BuddyAllocator.h"
 #include <iostream>
@@ -114,7 +116,7 @@ int BuddyAllocator::free(char* _a) {
 
 	//cout<<"is his buddy free? .. \n";
 	//print_free_list();
-	BlockHeader * possible_buddy = getbuddy(block_to_be_free);
+	BlockHeader * possible_buddy = getbuddy(block_to_be_free); //check if buddy is empty
 	if(possible_buddy){
 		BlockHeader* new_big_block = merge(block_to_be_free, possible_buddy);
 		while(getbuddy(new_big_block)){
@@ -130,18 +132,15 @@ int BuddyAllocator::free(char* _a) {
 
 		get_LL_address_of_bsize(new_big_block->block_size)->insert(new_big_block);
 
-	  }else{
+	  }else{ //no buddy is found so the memory is wiped but not merged with the other buddy. 
 		  for(int i =location; i<free_block_size; i++){
-			  memory[i]= '\0';
+			  memory[i]= '\0'; // setting the memory back to zero
 		  }
-		get_LL_address_of_bsize(free_block_size)->insert(block_to_be_free);
+		get_LL_address_of_bsize(free_block_size)->insert(block_to_be_free); //put the empty block back to the free list. 
 		//cout<<"buddy is occupied \n\n"<<endl;
 	}
 	//print_free_list();
 
-  /* Same here! */
-  //delete _a;
-  //cout<<"exiting free\n\n";
   _a = NULL;
   return 0;
 }
@@ -151,6 +150,8 @@ void BuddyAllocator::debug (){
 }
 
 void BuddyAllocator::print_free_list(){
+
+	//function used for debugging, have a visual of whats going on the free list. 
 	//cout<<"printing the free list: \n\n";
 	for(int i =0; i< free_list.size(); i++){
 		cout<<free_list[i]->get_block_size()<<" -> "; //<<" -> "<<free_list[i]->get_head()<<endl;
@@ -172,6 +173,8 @@ bool BuddyAllocator::is_block_available(int _length){
 }
 
 LinkedList* BuddyAllocator::get_LL_address_of_bsize( int _length){
+
+	//Returns for the link list address of the blocks with size _length
 	for(int i =0; i<free_list.size(); i++){
 		if( (free_list[i]->get_block_size()== _length) ){
 			return (free_list[i]);
@@ -200,22 +203,23 @@ BlockHeader* BuddyAllocator::getbuddy(BlockHeader * addr){
 	//cout<<"\n////////////////////////////!!!!!!**********!!!!!!!/////////////\n";
 	//cout<<"/////////////////---CHECKING FOR BUDDY---/////////////////////////\n";
 	int buddy1_size = addr->block_size;
-	char* updated_addr= (char*) addr;
-	//cout<<"offset value = "<<static_cast<void*>(memory)<<"\n";
-	//cout<< "current value = "<<updated_addr-memory<<"\n";
+	char* updated_addr= (char*) addr; //address of block
 
 	//print_free_list();
-	LinkedList * list_ = get_LL_address_of_bsize(buddy1_size);
-	BlockHeader* list_head= list_->get_head();
-	BlockHeader* index_ = list_head;
+
+	/*we are going to go through the free list of a certain size and search for the buddy*/
+
+	LinkedList * list_ = get_LL_address_of_bsize(buddy1_size); //get our linklist address. 
+	BlockHeader* list_head= list_->get_head();// return first element in the link list
+	BlockHeader* index_ = list_head; //start our search here
 	while(index_){
-		if( arebuddies( addr, index_) ){
-			return index_;
+		if( arebuddies( addr, index_) ){ //functions check if the current address matches the block 
+			return index_; //if it matches, then the buddy is found and returned
 		}
 		index_ = index_->next_header;
 	}
 
-	return NULL;
+	return NULL; // no buddy waas found 
 
 }
 
