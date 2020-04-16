@@ -1,4 +1,6 @@
-/*
+/*  Author: Mauro Lopez 
+    class: CSCE 313
+    Professor:
     Tanzir Ahmed
     Department of Computer Science & Engineering
     Texas A&M University
