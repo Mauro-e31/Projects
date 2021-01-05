@@ -1,117 +1,38 @@
-#include<iostream>
-#include<vector>
-#include<stdio.h>
 
-using namespace std;
+#include<unistd.h>
+#include"parser.h"
+#include"my_shell.h"
+
 
 int main(int argc, char const *argv[])
 {
-    cout<<"hello world"<<endl;
+    cout<<"$:"; 
+    vector<vector<string>> cmd_with_args= parse_cmd_line();
+ 
+    
+    while(cmd_with_args[0][0]!= "exit"){
+        pid_t pid = fork();
+        if(pid ==0){
+            ///shell programs to be executed///
+            //char* args[] ={"ls","-a",NULL};
+            //string flags = get_args_to_string(cmd_with_args[0]); 
+            //cout<<"flags = "<<flags<<endl; 
+            //execlp(cmd_with_args[0][0].c_str(),flags.c_str());
+            execlp("ls","ls","-l",(char*) NULL); 
+
+            return 0; 
+        }
+        else if(pid>0){
+            //
+            wait(NULL);
+            cout<<"$:"; 
+            cmd_with_args=parse_cmd_line(); 
+        }
+        else{
+            cout<<"fork failed"<<endl ;
+            return 1; 
+        }
+    }
 
     return 0;
 }
-
-/*
-for(int j =0; j<processes_in_pipes.size(); j++){
-  cout<<"j= "<<j<<endl;
-
-  int fd[2];
-  int pid2=1;
-
-  pipe(fd);
-  cout<<"argument line = ";print_vector_string(processes_in_pipes[j]);
-  cout<<"fd[0]= "<<fd[0]<<endl ;
-  cout<<"fd[1]= "<<fd[1]<<endl ;
-  if( processes_in_pipes.size()-1 !=j ){
-  //cout<<"test 2 \n";
-  //cout<<"processes_in_pipes.size()-1 = "<<processes_in_pipes.size()-1<< " j = "<<j<<endl;
-  pid2=fork();
-}
-
-  if( pid2==0){
-    //cout<<"executing command name = "<<processes_in_pipes[j][0]<<endl;
-    cout<<"hello from child"<<endl;
-    cout<<"j = "<<j<<endl;
-    //cout<<"argument line = ";print_vector_string(processes_in_pipes[j]);
-    if( j==0 ){
-      close(fd[0]);
-      dup2(fd[1],1);
-      execute_comand_name(processes_in_pipes[j]);
-    }
-
-    else{
-      cout<<"temp_fd[0]= "<<temp_fd[0]<<endl ;
-      cout<<"temp_fd[1]= "<<temp_fd[1]<<endl ;
-      cout<<"fd[0]= "<<fd[0]<<endl ;
-      cout<<"fd[1]= "<<fd[1]<<endl ;
-      cout<<"Child outputing to "<<fd[0]<<endl ;
-      cout<<"Inputs from = "<< temp_fd[0]<<endl<<endl;
-      cout<<endl;
-      dup2(fd[1],1);
-      dup2(temp_fd[0],0);
-      close(fd[0]);
-      execute_comand_name(processes_in_pipes[j]);
-      //close(fd[0]);
-      /*
-      int test_here = fork();
-      if(test_here==0){
-        dup2(temp_fd[0],0);
-        close(fd[0]);
-        execute_comand_name(processes_in_pipes[j]);
-      }
-
-      else{
-        wait(&test_here);
-        dup2(fd[1],1);
-        dup2(temp_fd[0],0);
-        close(fd[0]);
-        execute_comand_name(processes_in_pipes[j]);
-      }
-
-    }
-
-
-  }
-
-  else{
-    wait(&pid2);
-    cout<<"hello from parent "<<endl;
-    //cout<<"fd[0]= "<<temp_fd[0]<<endl ;
-    //cout<<"fd[1]= "<<fd[1]<<endl ;
-    if( processes_in_pipes.size()-1==j ){
-    cout<<"temp_fd[0]= "<<temp_fd[0]<<endl ;
-    cout<<"temp_fd[1]= "<<temp_fd[1]<<endl ;
-    close(fd[1]);
-    close(fd[0]);
-    dup2(temp_fd[0],0);
-    cout<<"chilling"<<endl;
-    execute_comand_name(processes_in_pipes[j]);
-    //string test_99;
-    //getline(cin,test_99);
-    //cout<<test_99<<endl;
-    exit++;
-    break;
-  }
-
-  cout<<"after parent \n\n"<<endl;
-
-}
-
-
-
-
-
-
-temp_fd[0]= fd[0];
-temp_fd[1]= fd[1];
-
-/*
-int pid2 = fork();
-if( pid2==0){
-  //close(fd[0]);
-  dup2(fd[1],1);
-  execute_comand_name()
-
-}
-}///for looop
-*/

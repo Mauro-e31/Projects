@@ -1,18 +1,20 @@
-# makefile
+#makefile
 
-all: my_shell
+all: shell
 
-shell.o: shell.cpp
-	g++-8 -std=c++2a -c -g shell.cpp
+shell:	my_shell.o parser.o main.o
+	g++ -std=c++11 -o shell main.o parser.o my_shell.o
 
-main.o : main.cpp
-	g++-8 -std=c++2a -c -g main.cpp
+my_shell.o: my_shell.cpp my_shell.h
+	g++ -std=c++11 -g -c my_shell.cpp
 
-my_shell: shell.o
-	g++-8 -std=c++2a -o my_shell shell.o
+parser.o: parser.cpp parser.h
+	g++ -std=c++11 -g -c parser.cpp
 
-main: main.o
-		g++-8 -std=c++2a -o main main.o
+main.o: main.cpp 
+	g++ -std=c++11 -g -c main.cpp
+
 
 clean:
 	rm *.o
+
