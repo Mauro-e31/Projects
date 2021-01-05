@@ -12,4 +12,9 @@ string get_current_dir();
 
 string get_args_to_string(vector<string> );
 
+void execute_in_background(vector<string>);
+
+void run_program(vector<string> ); 
+
+
 #endif
